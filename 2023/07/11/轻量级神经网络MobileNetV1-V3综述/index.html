@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="卷积神经网络目前在计算机视觉领域研究的大趋势是制造更深更复杂的网络提升准确率，但这些进步并不一定会使网络在规模和速度方面更有效。在许多现实应用中，如机器人、自动驾驶汽车等，识别任务需要在计算量有限的移动设备和平台上及时执行。对此，产生了关于轻量级网络的研究，其目标在保持模型性能的前提下降低模型大小，同时提升模型速度。MobileNet是Google提出的一种小巧而高效的CNN模型，用于移动和嵌入式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="轻量级神经网络MobileNetV1-V3综述">
+<meta property="og:url" content="http://example.com/2023/07/11/%E8%BD%BB%E9%87%8F%E7%BA%A7%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9CMobileNetV1-V3%E7%BB%BC%E8%BF%B0/index.html">
+<meta property="og:site_name" content="小五同学的blog">
+<meta property="og:description" content="卷积神经网络目前在计算机视觉领域研究的大趋势是制造更深更复杂的网络提升准确率，但这些进步并不一定会使网络在规模和速度方面更有效。在许多现实应用中，如机器人、自动驾驶汽车等，识别任务需要在计算量有限的移动设备和平台上及时执行。对此，产生了关于轻量级网络的研究，其目标在保持模型性能的前提下降低模型大小，同时提升模型速度。MobileNet是Google提出的一种小巧而高效的CNN模型，用于移动和嵌入式">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s1.ax1x.com/2023/07/11/pCWce2V.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/07/11/pCWcuKU.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/07/11/pCWcarD.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/07/11/pCWcDIA.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/07/11/pCWcoin.png">
+<meta property="og:image" content="https://s1.ax1x.com/2023/07/11/pCWgSiR.png">
+<meta property="og:image" content="https://cdnjson.com/images/2023/07/11/7.png">
+<meta property="og:image" content="https://cdnjson.com/images/2023/07/11/8.png">
+<meta property="og:image" content="https://cdnjson.com/images/2023/07/11/1.png">
+<meta property="og:image" content="https://cdnjson.com/images/2023/07/11/2.png">
+<meta property="og:image" content="https://cdnjson.com/images/2023/07/11/3.png">
+<meta property="og:image" content="https://cdnjson.com/images/2023/07/11/4.png">
+<meta property="og:image" content="https://cdnjson.com/images/2023/07/11/5.png">
+<meta property="og:image" content="https://cdnjson.com/images/2023/07/11/11.png">
+<meta property="og:image" content="https://cdnjson.com/images/2023/07/11/12.png">
+<meta property="article:published_time" content="2023-07-11T08:55:05.000Z">
+<meta property="article:modified_time" content="2023-07-11T10:17:01.102Z">
+<meta property="article:author" content="wyy">
+<meta property="article:tag" content="神经网络">
+<meta property="article:tag" content="MobileNet">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s1.ax1x.com/2023/07/11/pCWce2V.png">
+
+<link rel="canonical" href="http://example.com/2023/07/11/%E8%BD%BB%E9%87%8F%E7%BA%A7%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9CMobileNetV1-V3%E7%BB%BC%E8%BF%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>轻量级神经网络MobileNetV1-V3综述 | 小五同学的blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?0e0c8d238912025618c01c5fe8e4a45a# <app_id>";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">小五同学的blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">无涯星海，点点星光</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/11/%E8%BD%BB%E9%87%8F%E7%BA%A7%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9CMobileNetV1-V3%E7%BB%BC%E8%BF%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.jpg#/images/avatar.gif">
+      <meta itemprop="name" content="wyy">
+      <meta itemprop="description" content="在积跬步了">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小五同学的blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          轻量级神经网络MobileNetV1-V3综述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-07-11 16:55:05 / 修改时间：18:17:01" itemprop="dateCreated datePublished" datetime="2023-07-11T16:55:05+08:00">2023-07-11</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%AD%A6%E6%9C%AF%E7%9B%B8%E5%85%B3/" itemprop="url" rel="index"><span itemprop="name">学术相关</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">卷积神经网络目前在计算机视觉领域研究的大趋势是制造更深更复杂的网络提升准确率，但这些进步并不一定会使网络在规模和速度方面更有效。在许多现实应用中，如机器人、自动驾驶汽车等，识别任务需要在计算量有限的移动设备和平台上及时执行。对此，产生了关于轻量级网络的研究，其目标在保持模型性能的前提下降低模型大小，同时提升模型速度。MobileNet是Google提出的一种小巧而高效的CNN模型，用于移动和嵌入式视觉应用，其在accuracy和latency之间做了折中。本文将分析MobileNet从V1到V3的网络构造及原理，以及三个版本的主要创新点和改进，并对MobileNetV1使用Pytorch进行简单复现和实验。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h2><p>随着深度学习的发展，卷积神经网络变得越来越普遍。当前发展的总体趋势是，通过更深和更复杂的网络来得到更高的精度，但是这种网络往往在模型大小和运行速度上没多大优势。一些嵌入式平台上的应用比如机器人和自动驾驶，它们的硬件资源有限，就十分需要一种轻量级、低延迟（同时精度尚可接受）的网络模型。即使我们考虑云计算，也需要消耗大量的带宽资源和计算资源。因此，从2016年直至现在，业内提出了SqueezeNet、ShuffleNet、NasNet、MnasNet以及MobileNet等轻量级网络模型。这些模型使移动终端、嵌入式设备运行神经网络模型成为可能。而MobileNet在轻量级神经网络中较具代表性。<br>轻量级网络研究目前有两个发展方向，一个是迁移学习，另一个是网络稀疏。迁移学习是指一种学习对另一种学习的影响，以减少模型对数据量的依赖。不过，它也可以通过知识蒸馏实现大模型到小模型的迁移。而另一方面，网络稀疏是现在比较主流的优化方向，这方面的工作主要是以网络结构的剪枝和调整卷积方式为主。比如深度压缩，但它在效率上的提高并不适合大多数的通用CPU，因为它的存储不连续，索引权重时容易发生Cache Miss。本文介绍的MobileNet在这方面更有优势。<br>MobileNet主要关注优化延迟，同时兼顾模型大小，在保证模型准确率的同时体积更小，速度更快。谷歌对于MobileNet的每次更新都让其有了新的特性，使得MobileNet非常具有研究和分析意义，本文将对MobileNetV1-V3的主要创新点和网络结构进行解析，并在最后使用Pytorch简单复现MobileNetV1。</p>
+<h2 id="MobileNetV1网络架构"><a href="#MobileNetV1网络架构" class="headerlink" title="MobileNetV1网络架构"></a>MobileNetV1网络架构</h2><p>作为MobileNet系列最初始的版本，V1以深度可分离卷积代替标准卷积层作为主体构建网络结构，引入两个全局超参数（宽度、分辨率因子）实现准确率与延时性平衡。</p>
+<h3 id="深度可分离卷积"><a href="#深度可分离卷积" class="headerlink" title="深度可分离卷积"></a>深度可分离卷积</h3><p>深度可分离卷积（DW）是一种分解卷积的形式，它将标准卷积分解为深度卷积和逐点卷积（1×1卷积）。<br>对于MobileNet，深度卷积对每个输入通道对应一个输入通道，然后逐点卷积用1×1卷积将深度卷积的输出结合起来。而标准卷积的卷积核是用在所有的输入通道上。深度可分卷积将其分为两层，一个单独的层用于滤波，另一个单独的层用于合并，这样其实整体效果和一个标准卷积是差不多的。这种因式分解的效果是大幅减少计算量和模型大小。</p>
+<p><a target="_blank" rel="noopener" href="https://imgse.com/i/pCWce2V"><img src="https://s1.ax1x.com/2023/07/11/pCWce2V.png" alt="pCWce2V.png"></a></p>
+<center>图1 分解过程示意图</center>
+
+<p>输入的通道数为M ,输出的通道数为N，DK为卷积核宽度和高度，DF为特征映射的宽度和高度，可以得到标准卷积K为（DK，DK，M，N），输入特征映射F尺寸为（DF，DF，M），输出特征映射G为（DG，DG，N）。<br>把深度可分离卷积与标准卷积所用的计算量做对比。标准卷积的计算公式为：<br><a target="_blank" rel="noopener" href="https://imgse.com/i/pCWcuKU"><img src="https://s1.ax1x.com/2023/07/11/pCWcuKU.png" alt="pCWcuKU.png"></a><br>将标准卷积因式分解为深度卷积和逐点卷积后，深度卷积的尺寸为（DK，DK，1，M），点卷积为（1，1，M，N）。根据卷积公式得到深度可分离卷积的计算量（深度卷积+逐点卷积）为：<br><a target="_blank" rel="noopener" href="https://imgse.com/i/pCWcarD"><img src="https://s1.ax1x.com/2023/07/11/pCWcarD.png" alt="pCWcarD.png"></a></p>
+<p>根据两个计算量公式可以得到总计算量减少了以下这么多：<br><a target="_blank" rel="noopener" href="https://imgse.com/i/pCWcDIA"><img src="https://s1.ax1x.com/2023/07/11/pCWcDIA.png" alt="pCWcDIA.png"></a></p>
+<h3 id="MobileNetV1网络结构"><a href="#MobileNetV1网络结构" class="headerlink" title="MobileNetV1网络结构"></a>MobileNetV1网络结构</h3><p>1.1介绍的深度可分离卷积（DW）作为MobileNet的基本组件，但是在真正应用中会加入Batch Normalization（BN）和ReLU激活函数，DW基本结构如下图所示：<br><a target="_blank" rel="noopener" href="https://imgse.com/i/pCWcoin"><img src="https://s1.ax1x.com/2023/07/11/pCWcoin.png" alt="pCWcoin.png"></a></p>
+<center>图2 DW基本结构图</center>
+
+<p>如图3所示，MobileNet的具体结构首先是一个3x3的标准卷积，然后后面就是堆积DW，并且可以看到其中的部分DW会通过strides&#x3D;2进行下采样。然后采用average pooling将特征变成1x1，根据预测类别大小加上全连接层，最后是一个softmax层。整体来看，网络有28层（这里avgpool和softmax不计算在内）。<br><a target="_blank" rel="noopener" href="https://imgse.com/i/pCWgSiR"><img src="https://s1.ax1x.com/2023/07/11/pCWgSiR.png" alt="pCWgSiR.png"></a></p>
+<center>图3 MobileNet网络结构</center>
+
+<p>通过该论文可以分析整个网络的参数和计算量分布，如图4所示。可以看到模型几乎将所有计算量集中在1x1卷积上。卷积一般通过一种im2col方式实现，其需要内存重组，但是当卷积核为1x1时，其实就不需要这种操作，底层可以通过GEMM有更快的实现。参数也主要集中在逐点卷积。</p>
+<p><a target="_blank" rel="noopener" href="https://cdnjson.com/image/RN9wi"><img src="https://cdnjson.com/images/2023/07/11/7.png" alt="7.png"></a></p>
+<center>图4每层所占资源</center>
+
+<h3 id="宽度和分辨率因子"><a href="#宽度和分辨率因子" class="headerlink" title="宽度和分辨率因子"></a>宽度和分辨率因子</h3><p>MobileNetV1本身的网络结构已经比较小并且执行延迟较低，但为了适配更定制化的场景，MobileNet提供了称为宽度因子和分辨率因子的超参数给我们调整。在MobileNetV1、V2、V3都可以运用。<br>宽度因子主要是按比例减少通道数，该参数记为α，其取值范围为(0,1]，那么输入与输出通道数将变成αM 和αN。分辨率因子主要是按比例降低特征图的大小，记为β，比如原来输入特征图是224x224，可以减少为192x192，综合两个因子，DW的计算量为：</p>
+<p><a target="_blank" rel="noopener" href="https://cdnjson.com/image/RNLQj"><img src="https://cdnjson.com/images/2023/07/11/8.png" alt="8.png"></a></p>
+<h2 id="MobileNetV2网络架构"><a href="#MobileNetV2网络架构" class="headerlink" title="MobileNetV2网络架构"></a>MobileNetV2网络架构</h2><p>V1的核心是加入深度可分离卷积和两个超参数降低计算量来提升网络的运算速度，但在训练结束后的深度卷积得到较多的空卷积核，主要是由于ReLU激活函数对低维度运算，很容易造成信息的丢失。而在高维度进行ReLU运算的话，信息的丢失则会很少。针对这个问题，在MobileNetV2中将ReLU替换成线性激活函数。相较于V1，MobileNetV2中设计了线性瓶颈和反向残差结构，进一步优化网络。</p>
+<p><a target="_blank" rel="noopener" href="https://cdnjson.com/image/RNhgy"><img src="https://cdnjson.com/images/2023/07/11/1.png" alt="1.png"></a></p>
+<center>图5 MobileNetV2网络结构</center>
+
+<h3 id="线性瓶颈结构"><a href="#线性瓶颈结构" class="headerlink" title="线性瓶颈结构"></a>线性瓶颈结构</h3><p>线性瓶颈英文为Linear Bottleneck，是从Bottleneck结构演变而来的，被用于MobileNetV2与V3。该结构第一层使用逐点卷积，第二层使用3×3大小卷积核进行深度卷积，第三层再使用逐点卷积。MobileNet中的瓶颈结构最后一层逐点卷积使用的激活函数是Linear，所以称其为线性瓶颈结构。线性瓶颈结构有两种，第一种是步长为1时使用残差结构，第二种是步长为2时不使用残差结构。</p>
+<p><a target="_blank" rel="noopener" href="https://cdnjson.com/image/RNmXM"><img src="https://cdnjson.com/images/2023/07/11/2.png" alt="2.png"></a></p>
+<center>图6 V1V2网络结构对比图</center>
+
+<p>深度卷积本身没有改变通道的能力，来的是多少通道输出就是多少通道。如果来的通道很少的话，DW深度卷积只能在低维度上工作，这样效果并不会很好，所以我们要“扩张”通道。既然我们已经知道PW（1×1卷积）可以用来升维和降维，那就可以在DW深度卷积之前使用PW卷积进行升维（升维倍数为t，t&#x3D;6），再在一个更高维的空间中进行卷积操作来提取特征。不管输入通道数是多少，经过第一个PW逐点卷积升维之后，深度卷积都是在相对的更高6倍维度上进行工作。</p>
+<h3 id="反向残差"><a href="#反向残差" class="headerlink" title="反向残差"></a>反向残差</h3><p>受ResNet的残差结构启发，MobileNetV2中也加入了类似的shortcut结构，但在ResNet中的流程是降维、卷积、升维，而MobileNetV2使用第一层逐点卷积升维并使用Relu6激活函数代替Relu，之后使用深度卷积，同样使用Relu6激活函数，再使用逐点卷积降维。这样的卷积操作方式更有利于移动端使用，因维度升降方式与ResNet刚好相反，MobileNetV2将其称之为反向残差。</p>
+<h2 id="MobileNetV3网络架构"><a href="#MobileNetV3网络架构" class="headerlink" title="MobileNetV3网络架构"></a>MobileNetV3网络架构</h2><p>MobileNetV3进一步提高模型精度降低延迟，并为不同性能的运行平台细化划分不同的网络结构。提出了Large和Small两个版本，Large版本适用于计算和存储性能较高的平台，Small版本适用于硬件性能较低的平台。在MobileNetV3创新性地用5×5大小的深度卷积代替部分3×3的深度卷积，同时加入Squeeze-and-excitation（SE）模块和 h-swish（HS）激活函数以提高模型精度。</p>
+<p><a target="_blank" rel="noopener" href="https://cdnjson.com/image/RNCUQ"><img src="https://cdnjson.com/images/2023/07/11/3.png" alt="3.png"></a></p>
+<center>图7 左为small版本右为large版本网络结构</center>
+
+<h3 id="SE模块"><a href="#SE模块" class="headerlink" title="SE模块"></a>SE模块</h3><p>SE模块是一种能够让网络模型对特征进行校准的机制，使得有效的权重大，无效或效果小的权重小的效果，达到通过精确建模卷积特征各个通道之间的作用关系来改善网络模型表达能力的目的。MobileNetV3在线性瓶颈结构最后一层上，将V2中最后的逐点卷积，改为先进行SE操作再逐点卷积。这样的改进会增加网络的总参数量和计算量，所以MobileNetV3-Large中的总参数量比MobileNetV2多了2M。但相较于V2，V3的精度有了很大的提升。</p>
+<h3 id="h-swish（HS）激活函数"><a href="#h-swish（HS）激活函数" class="headerlink" title="h-swish（HS）激活函数"></a>h-swish（HS）激活函数</h3><p>V3尝试swish当作为ReLU的替代，因为它可以显著提高神经网络的精度。虽然这种非线性提高了精度，但它在嵌入式环境中带来了非零成本，因为在移动设备上计算sigmoid函数要昂贵得多。所以以swish为基础修改提出了h-swish。<br>MobieNetV3一个近似函数来逼进这个swish，细微的区别是使用的是ReLU6而不是自定义剪辑常数。因为几乎所有的软件和硬件框架上都可以使用ReLU6的优化实现，同时在量化模式下，它消除了由于近似sigmoid的不同实现而导致的潜在的数值精度损失，h-swish可以实现为一个分段函数，以减少内存访问数量，从而大幅降低延迟成本。</p>
+<p><a target="_blank" rel="noopener" href="https://cdnjson.com/image/RNF1D"><img src="https://cdnjson.com/images/2023/07/11/4.png" alt="4.png"></a></p>
+<center>图8 h-swish公式</center>
+
+<p>随着网络的深入，应用非线性激活函数的成本会降低，能够更好的减少参数量。因此，在V3的架构中，只在模型的后半部分使用h-swish。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>MobileNet作为轻量级神经网络相较于其他类模型有着更小的参数量和计算量，但在移动计算领域有着较快的运算速度和低延迟，同时具有较高的准确率。<br>纵观MobileNet从V1到V3的进化，是在保证模型准确率的基础上，尽可能的减少神经网络参数、减少计算量，并在此之上尽可能提升准确率。MobileNet使用了批规范化，参考并优化了Xception结构中的深度可分离卷积、ResNet中的瓶颈结构和残差结构、MNasNet中的Squeeze-and-excitation结构，使用了全新的h-swish激活函数等，从而进化出了现在良好的效果。这个优化过程对于我们研发设计适用于移动设备的轻量级网络模型有着一定的启发性。</p>
+<h2 id="训练过程"><a href="#训练过程" class="headerlink" title="训练过程"></a>训练过程</h2><p>环境：处理器2.2 GHz 六核Intel Core i7内存16 GB 2400 MHz DDR4</p>
+<p>在cifar-10数据集上训练3个小时，保存得到accuracy为73.16%的模型。</p>
+<p><a target="_blank" rel="noopener" href="https://cdnjson.com/image/RNbrY"><img src="https://cdnjson.com/images/2023/07/11/5.png" alt="5.png"></a></p>
+<p><a target="_blank" rel="noopener" href="https://cdnjson.com/image/RNDOF"><img src="https://cdnjson.com/images/2023/07/11/11.png" alt="11.png"></a></p>
+<center>图10 训练-结束</center>
+
+<p><a target="_blank" rel="noopener" href="https://cdnjson.com/image/RNnd6"><img src="https://cdnjson.com/images/2023/07/11/12.png" alt="12.png"></a></p>
+<center>图11 识别结果</center>
+
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Howard A G, Zhu M, Chen B, et al. Mobilenets: Efficient convolutional neural networks for mobile vision applications. arXiv:1704.04861, 2017.</p>
+<p>[2] Sandler M, Howard A, Zhu M, et al. MobileNetV2: Inverted Residuals and Linear Bottlenecks[C]&#x2F;&#x2F; 2018 IEEE&#x2F;CVF Conference on Computer Vision and Pattern Recognition (CVPR). IEEE, 2018.</p>
+<p>[3] Howard A, Sandler M, Chen B, et al. Searching for MobileNetV3[C]&#x2F;&#x2F; 2019 IEEE&#x2F;CVF International Conference on Computer Vision (ICCV). IEEE, 2020.</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" rel="tag"># 神经网络</a>
+              <a href="/tags/MobileNet/" rel="tag"># MobileNet</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/07/11/Linux%E7%BD%91%E7%BB%9C%E7%BC%96%E7%A8%8B%E7%BB%BC%E5%90%88%E7%A8%8B%E5%BA%8F%E8%AE%BE%E8%AE%A1/" rel="prev" title="Linux网络编程综合程序设计">
+      <i class="fa fa-chevron-left"></i> Linux网络编程综合程序设计
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%95%E8%A8%80"><span class="nav-number">1.</span> <span class="nav-text">引言</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MobileNetV1%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84"><span class="nav-number">2.</span> <span class="nav-text">MobileNetV1网络架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B1%E5%BA%A6%E5%8F%AF%E5%88%86%E7%A6%BB%E5%8D%B7%E7%A7%AF"><span class="nav-number">2.1.</span> <span class="nav-text">深度可分离卷积</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MobileNetV1%E7%BD%91%E7%BB%9C%E7%BB%93%E6%9E%84"><span class="nav-number">2.2.</span> <span class="nav-text">MobileNetV1网络结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%BD%E5%BA%A6%E5%92%8C%E5%88%86%E8%BE%A8%E7%8E%87%E5%9B%A0%E5%AD%90"><span class="nav-number">2.3.</span> <span class="nav-text">宽度和分辨率因子</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MobileNetV2%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84"><span class="nav-number">3.</span> <span class="nav-text">MobileNetV2网络架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E6%80%A7%E7%93%B6%E9%A2%88%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">线性瓶颈结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%8D%E5%90%91%E6%AE%8B%E5%B7%AE"><span class="nav-number">3.2.</span> <span class="nav-text">反向残差</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#MobileNetV3%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84"><span class="nav-number">4.</span> <span class="nav-text">MobileNetV3网络架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#SE%E6%A8%A1%E5%9D%97"><span class="nav-number">4.1.</span> <span class="nav-text">SE模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#h-swish%EF%BC%88HS%EF%BC%89%E6%BF%80%E6%B4%BB%E5%87%BD%E6%95%B0"><span class="nav-number">4.2.</span> <span class="nav-text">h-swish（HS）激活函数</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AE%AD%E7%BB%83%E8%BF%87%E7%A8%8B"><span class="nav-number">6.</span> <span class="nav-text">训练过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">7.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wyy"
+      src="/uploads/avatar.jpg#/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">wyy</p>
+  <div class="site-description" itemprop="description">在积跬步了</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wyy</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
