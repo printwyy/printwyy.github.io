@@ -35,8 +35,8 @@
 <meta property="article:modified_time" content="2023-07-11T10:18:54.170Z">
 <meta property="article:author" content="wyy">
 <meta property="article:tag" content="线程">
-<meta property="article:tag" content="文件读写">
 <meta property="article:tag" content="进程">
+<meta property="article:tag" content="文件读写">
 <meta property="article:tag" content="socket">
 <meta property="article:tag" content="TCP">
 <meta property="article:tag" content="UDP">
@@ -286,8 +286,8 @@
       <footer class="post-footer">
           <div class="post-tags">
               <a href="/tags/%E7%BA%BF%E7%A8%8B/" rel="tag"># 线程</a>
-              <a href="/tags/%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99/" rel="tag"># 文件读写</a>
               <a href="/tags/%E8%BF%9B%E7%A8%8B/" rel="tag"># 进程</a>
+              <a href="/tags/%E6%96%87%E4%BB%B6%E8%AF%BB%E5%86%99/" rel="tag"># 文件读写</a>
               <a href="/tags/socket/" rel="tag"># socket</a>
               <a href="/tags/TCP/" rel="tag"># TCP</a>
               <a href="/tags/UDP/" rel="tag"># UDP</a>
@@ -380,20 +380,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-count">14</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-count">6</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">17</span>
+        <span class="site-state-item-count">26</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -492,6 +492,26 @@
 
 
 
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
 
 
 

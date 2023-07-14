@@ -4,6 +4,101 @@
   
     
     <entry>
+      <title>图论——第三次作业解析</title>
+      <link href="/2023/07/14/%E5%9B%BE%E8%AE%BA%E2%80%94%E2%80%94%E7%AC%AC%E4%B8%89%E6%AC%A1%E4%BD%9C%E4%B8%9A%E8%A7%A3%E6%9E%90/"/>
+      <url>/2023/07/14/%E5%9B%BE%E8%AE%BA%E2%80%94%E2%80%94%E7%AC%AC%E4%B8%89%E6%AC%A1%E4%BD%9C%E4%B8%9A%E8%A7%A3%E6%9E%90/</url>
+      
+        <content type="html"><![CDATA[<h2 id="匹配与因子分解"><a href="#匹配与因子分解" class="headerlink" title="匹配与因子分解"></a>匹配与因子分解</h2><br><div class="pdfobject-container" data-target="/pdf/t3.pdf" data-height="1000px"></div><br>]]></content>
+      
+      
+      <categories>
+          
+          <category> 图论 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 作业解析 </tag>
+            
+            <tag> 数学 </tag>
+            
+            <tag> 因子分解 </tag>
+            
+            <tag> 匹配 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>图论——第二次作业解析</title>
+      <link href="/2023/07/14/%E5%9B%BE%E8%AE%BA%E2%80%94%E2%80%94%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%BD%9C%E4%B8%9A%E8%A7%A3%E6%9E%90/"/>
+      <url>/2023/07/14/%E5%9B%BE%E8%AE%BA%E2%80%94%E2%80%94%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%BD%9C%E4%B8%9A%E8%A7%A3%E6%9E%90/</url>
+      
+        <content type="html"><![CDATA[<h2 id="图连通度、欧拉图、哈密尔顿图"><a href="#图连通度、欧拉图、哈密尔顿图" class="headerlink" title="图连通度、欧拉图、哈密尔顿图"></a>图连通度、欧拉图、哈密尔顿图</h2><br><div class="pdfobject-container" data-target="/pdf/t2.pdf" data-height="1000px"></div><br>]]></content>
+      
+      
+      <categories>
+          
+          <category> 图论 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 作业解析 </tag>
+            
+            <tag> 数学 </tag>
+            
+            <tag> 连通度 </tag>
+            
+            <tag> 欧拉图 </tag>
+            
+            <tag> 哈密尔顿图 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>图论——第一次作业解析</title>
+      <link href="/2023/07/13/%E5%9B%BE%E8%AE%BA%E2%80%94%E2%80%94%E7%AC%AC%E4%B8%80%E6%AC%A1%E4%BD%9C%E4%B8%9A%E8%A7%A3%E6%9E%90/"/>
+      <url>/2023/07/13/%E5%9B%BE%E8%AE%BA%E2%80%94%E2%80%94%E7%AC%AC%E4%B8%80%E6%AC%A1%E4%BD%9C%E4%B8%9A%E8%A7%A3%E6%9E%90/</url>
+      
+        <content type="html"><![CDATA[<h2 id="树和相关基础概念"><a href="#树和相关基础概念" class="headerlink" title="树和相关基础概念"></a>树和相关基础概念</h2><br><div class="pdfobject-container" data-target="/pdf/t1.pdf" data-height="1000px"></div><br>]]></content>
+      
+      
+      <categories>
+          
+          <category> 图论 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 作业解析 </tag>
+            
+            <tag> 数学 </tag>
+            
+            <tag> 树 </tag>
+            
+            <tag> 基础概念 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>网络安全传输模型代码设计实践</title>
       <link href="/2023/07/12/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E4%BC%A0%E8%BE%93%E6%A8%A1%E5%9E%8B%E4%BB%A3%E7%A0%81%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5/"/>
       <url>/2023/07/12/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8%E4%BC%A0%E8%BE%93%E6%A8%A1%E5%9E%8B%E4%BB%A3%E7%A0%81%E8%AE%BE%E8%AE%A1%E5%AE%9E%E8%B7%B5/</url>
@@ -109,9 +204,9 @@
             
             <tag> 线程 </tag>
             
-            <tag> 文件读写 </tag>
-            
             <tag> 进程 </tag>
+            
+            <tag> 文件读写 </tag>
             
             <tag> socket </tag>
             
@@ -273,9 +368,9 @@
       
         <tags>
             
-            <tag> 文件读写 </tag>
-            
             <tag> 进程 </tag>
+            
+            <tag> 文件读写 </tag>
             
         </tags>
       
