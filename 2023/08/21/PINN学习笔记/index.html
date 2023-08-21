@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/logo180.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/logo32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/logo16.png">
+  <link rel="mask-icon" href="/images/logo512.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="PINN内嵌物理知识神经网络的研究背景、算法原理、求解实验、应用及局限性分析等部分。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PINN学习笔记">
+<meta property="og:url" content="http://example.com/2023/08/21/PINN%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="小五同学的blog">
+<meta property="og:description" content="PINN内嵌物理知识神经网络的研究背景、算法原理、求解实验、应用及局限性分析等部分。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e2fffd999fd.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e3094a9e1e3.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30a11c1cb7.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30a9fa89f4.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30b2887df0.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30b77af865.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30bff3cef1.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30c80871ca.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30cc9e6a3f.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30cf614a84.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30d46f1fcb.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30d7497be7.png">
+<meta property="og:image" content="https://x.imgs.ovh/x/2023/08/21/64e30d956c557.png">
+<meta property="article:published_time" content="2023-08-21T05:59:24.000Z">
+<meta property="article:modified_time" content="2023-08-21T07:37:37.557Z">
+<meta property="article:author" content="wyy">
+<meta property="article:tag" content="神经网络">
+<meta property="article:tag" content="AI for science">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://x.imgs.ovh/x/2023/08/21/64e2fffd999fd.png">
+
+<link rel="canonical" href="http://example.com/2023/08/21/PINN%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>PINN学习笔记 | 小五同学的blog</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?0e0c8d238912025618c01c5fe8e4a45a# <app_id>";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">小五同学的blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">无涯星海，点点星光</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/21/PINN%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/uploads/avatar.jpg#/images/avatar.gif">
+      <meta itemprop="name" content="wyy">
+      <meta itemprop="description" content="在积跬步了">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="小五同学的blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          PINN学习笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-08-21 13:59:24 / 修改时间：15:37:37" itemprop="dateCreated datePublished" datetime="2023-08-21T13:59:24+08:00">2023-08-21</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E5%AD%A6%E6%9C%AF%E7%9B%B8%E5%85%B3/" itemprop="url" rel="index"><span itemprop="name">学术相关</span></a>
+                </span>
+            </span>
+
+          
+            <div class="post-description">PINN内嵌物理知识神经网络的研究背景、算法原理、求解实验、应用及局限性分析等部分。</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="研究背景"><a href="#研究背景" class="headerlink" title="研究背景"></a>研究背景</h2><h3 id="问题提出：如何建模和预测多物理和多尺度系统的动力学？"><a href="#问题提出：如何建模和预测多物理和多尺度系统的动力学？" class="headerlink" title="问题提出：如何建模和预测多物理和多尺度系统的动力学？"></a>问题提出：如何建模和预测多物理和多尺度系统的动力学？</h3><p>​		例如，地球系统是一个独特复杂的系统，其动力学受到时空尺度上发生的物理、化学和生物过程相互作用的复杂控制等。</p>
+<p>​		现有的传统方法：有限差分、有限元、光谱以及无网格方法数值求解偏微分方程（PDE）。</p>
+<p>&emsp;&emsp;但这些方法存在一些局限性问题：</p>
+<p>​		1、非线性多尺度系统带来<strong>高昂成本</strong>和<strong>多种不确定性来源</strong>；</p>
+<p>​		2、求解<strong>逆问题</strong>（如，推断功能材料中的材料特性）<strong>代价高昂</strong>，需要复杂公式、新算法和代码；</p>
+<p>​		3、无法解决具有<strong>缺失</strong>、<strong>间隙</strong>或<strong>噪声边界条件</strong>的实际物理问题；</p>
+<p>​		综上所述，<strong>需要一种普遍接受的建模和预测方法，应对现有大量的（具有时空变异性）观测数据，同时可以满足现实世界的物理规则。</strong>PINN的框架思想应运而生。</p>
+<h3 id="目前所求解的问题类型以及传统ML算法的局限性"><a href="#目前所求解的问题类型以及传统ML算法的局限性" class="headerlink" title="目前所求解的问题类型以及传统ML算法的局限性"></a>目前所求解的问题类型以及传统ML算法的局限性</h3><p>​		我们将物理世界中求解的各种问题总结为三大类，如下图所示：</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e2fffd999fd.png" alt="图片 1.png"></p>
+<p>​		1、左侧（经典方法）：小数据，了解所有物理知识；</p>
+<p>​		2、<strong>中间（</strong>PINN<strong>）：部分数据，缺少一些参数值或偏微分方程的部分项（求正、反问题，最常见）</strong>；</p>
+<p>​		3、右侧（系统验证&#x2F;发现）：完全数据驱动，不含任何物理知识（DeepONet），类似于大模型等；</p>
+<p>​		而传统的深度学习和机器学习算法常用于解决自动提取数据特征分析等问题，其算法本身存在一定的局限性：</p>
+<p>​		1、多数ML方法目前都<strong>无法从数据洪流中提取可解释的信息和知识</strong>；</p>
+<p>​		2、由于观测数据偏差，预测可能<strong>在物理上不一致或不可信</strong>，导致较差的泛化性能；</p>
+<p>​		3、得到的结果大部分不满足物理知识；</p>
+<p>​		为了采用DL算法来更高效的解决中间问题，提出了PINN算法思想：提供物理规则（或信息先验）等基本物理规律和领域知识优势，从而提高学习算法的性能</p>
+<h3 id="PINN优点"><a href="#PINN优点" class="headerlink" title="PINN优点"></a>PINN优点</h3><p>&emsp;1、<strong>应对不完美的模型和噪声数据</strong>：PINN公式具有平衡性、规则性；无需昂贵的网络生成；</p>
+<p>&emsp;2、<strong>小数据领域上具有强泛化性</strong>：嵌入物理知识从而约束&#x2F;惩罚深度学习模型，减少高精度必要训练数据的数量；</p>
+<p>&emsp;&emsp;3、<strong>有助于理解深度学习模型</strong>：阐明深度学习背后的内在机制；</p>
+<p>&emsp;&emsp;4、<strong>处理高维度数据</strong>：深度学习模型学习高维度数据的样本分布，用于精细分辨率的图像分类、语言建模和高维PDE求解等问题；</p>
+<p>&emsp;&emsp;5、<strong>量化不确定性</strong>：可靠预测多尺度和多物理系统的演化，用于解决物理系统（如参数的随机性）、数据（噪声）、模型（难以量化）的不确定性；</p>
+<h2 id="算法原理"><a href="#算法原理" class="headerlink" title="算法原理"></a>算法原理</h2><h3 id="PINN原理概述"><a href="#PINN原理概述" class="headerlink" title="PINN原理概述"></a>PINN原理概述</h3><p>通过使用自动微分将<strong>偏微分方程嵌入神经网络的损失函数</strong>，PINN无缝集成了来自测量和偏微分方程PDE的信息。</p>
+<p>考虑解决以下PDE问题：<br>$$<br>𝑢_𝑡+𝑁(𝑢;𝜆)&#x3D;0<br>$$<br>其中u(t,x)是需要求的潜在解，N(u;λ)是关于这个解的非线性操作算子（如偏导数），λ是待定参数。</p>
+<p>那么现在存在两种情况：</p>
+<p>​    1、参数λ已知时，如何求未知解u(t,x)；</p>
+<p>​    2、参数λ未知时，如何求解u(t,x)的同时确定参数λ；</p>
+<p>根据上述公式得到：<br>$$<br>𝑓(𝑡,𝑥):&#x3D;𝑢_𝑡+𝑁(𝑢;𝜆)<br>$$<br>PINN使用神经网络来逼近u(t,x)和f(t,x)，且这两个网络共享参数（基于神经网络自动微分的功能，链式法则）</p>
+<h3 id="PINN网络框架"><a href="#PINN网络框架" class="headerlink" title="PINN网络框架"></a>PINN网络框架</h3><p>具体操作：首先定义一个网络来拟合u(t,x)，然后f(t,x)可接在u(t,x)后面再加上一些操作算子。</p>
+<p>定义损失函数：</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e3094a9e1e3.png" alt="截屏2023-08-21 14.50.39.png"></p>
+<p>MSE_u（数据损失函数）表示在初始和边界条件处神经网络的拟合值与真实值的均方误差；MSE_f（物理损失函数）表示的是神经网络与真实物理规律的均方误差。当LOSS趋近于0时，我们可以得到PDE的精确解。</p>
+<p>&emsp;<strong>那么，如何将先验物理知识嵌入进神经网络呢？学习</strong></p>
+<h3 id="求解一阶非线性Schrödinger方程"><a href="#求解一阶非线性Schrödinger方程" class="headerlink" title="求解一阶非线性Schrödinger方程"></a>求解一阶非线性Schrödinger方程</h3><p>&emsp;&emsp;方程如下：其中h(t,x)为复数函数， u是实部，v是虚部</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e30a11c1cb7.png" alt="截屏2023-08-21 14.53.49.png"></p>
+<p>  根据薛定谔方程构造损失函数：</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e30a9fa89f4.png" alt="截屏2023-08-21 14.56.20.png"></p>
+<p>MSE_0是初始条件损失函数， MSE_b是周期条件损失函数，MSE_f是偏微分方程构造的损失函数，当损失函数趋近于0时，可以得到PDE较为精确的结果。</p>
+<p>在具体代码实现中，损失函数l的具体形式如下：<br>$$<br>𝑙&#x3D;𝑙_1+ 𝑙_2+ 𝑙_3+ 𝑙_4+ 𝑙_5+ 𝑙_6+ 𝑙_7+ 𝑙_8<br>$$<br><img src="https://x.imgs.ovh/x/2023/08/21/64e30b2887df0.png" alt="截屏2023-08-21 14.58.21.png"></p>
+<p>PINN求解<strong>目标：推断薛定谔方程的整个时空解</strong> <strong>h(t,x)</strong></p>
+<p>神经网络架构如下：使用5层神经网络来描述潜在函数h(t,x)&#x3D;[u(t,x),v(t,x)]，每层100个神经元，使用双曲正切激活函数。控制<strong>输入</strong>-<strong>输出之间的网络参数训练过程</strong>，使其生成结果与输入变量之间尽量保持一定的物理关系</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e30b77af865.png" alt="图片 1.png"></p>
+<p>训练50000次后的输出结果如下：其中$|ℎ(𝑡,𝑥)|&#x3D;√(𝑢^2 (𝑡,𝑥)+𝑣^2 (𝑡,𝑥))$ 。可以看到仅使用少量初始数据，物理信息神经网络就能准确捕捉薛定谔方程错综复杂的非线性行为。</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e30bff3cef1.png" alt="3.png"></p>
+<h2 id="求解实验"><a href="#求解实验" class="headerlink" title="求解实验"></a>求解实验</h2><h3 id="一维Burgers方程"><a href="#一维Burgers方程" class="headerlink" title="一维Burgers方程"></a>一维Burgers方程</h3><p>在一维上的Burgers方程与边界条件如下：</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e30c80871ca.png" alt="截屏2023-08-21 15.04.24.png"></p>
+<p>1、<strong>定义f(t,x)方程</strong>：</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e30cc9e6a3f.png" alt="4.png"></p>
+<p>2、<strong>通过深度神经网络逼近u_t</strong>，即u(t,x)。</p>
+<p>代码定义：<img src="https://x.imgs.ovh/x/2023/08/21/64e30cf614a84.png" alt="5.png"></p>
+<p>3、设计神经网络损失函数：<br>$$<br>MSE&#x3D;MSE_u+MSE_f<br>$$<br><img src="https://x.imgs.ovh/x/2023/08/21/64e30d46f1fcb.png" alt="截屏2023-08-21 15.07.42.png"></p>
+<p>4、网络结构</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e30d7497be7.png" alt="6.png"></p>
+<p>5、下图是我们在数据驱动下求解Burgers 方程的结果：</p>
+<p><img src="https://x.imgs.ovh/x/2023/08/21/64e30d956c557.png" alt="7.png"></p>
+<h2 id="应用及局限性"><a href="#应用及局限性" class="headerlink" title="应用及局限性"></a>应用及局限性</h2><p>应用：用于流体力学、量子化学、材料科学、分子模拟、地球物理学等问题中。</p>
+<p>PINN这种方法或者思想可以弥补科学机器学习领域中单纯数据驱动的弱点。如果把传统数值格式认为是单纯物理知识驱动，那么PINN或者更广义一点的内嵌物理知识机器学习就是数据驱动与知识驱动的融合方法。</p>
+<p>1、<strong>多尺度和多物理向题</strong>：可能很难学习高频函数，多个物理过程可能很难通过一个PINN得以实现（每个物理场分别训练，通过并行的架构结合到一起，学习一个耦合解）；</p>
+<p>2、<strong>新算法和计算框架</strong>：训练过程可能不够稳健，无法保证向全局最小值的收敛（设计合适的框架和训练算法等）；</p>
+<p>&emsp;3、<strong>数据</strong>：缺少有价值的实验数据集，以及生成这些数据集所需要的物理模型和所有参数（研究人员完善）；</p>
+<p>&emsp;&emsp;4、<strong>新理论</strong>：缺少一种新理论，来严格分析物理知识学习的能力和局限性。</p>
+<p>   总而言之，基于物理知识的学习即使在噪声数据和高维环境中也能无缝地集成数据和数学模型，并能非常有效地解决一般的逆问题。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C/" rel="tag"># 神经网络</a>
+              <a href="/tags/AI-for-science/" rel="tag"># AI for science</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/07/14/%E5%9B%BE%E8%AE%BA%E2%80%94%E2%80%94%E7%AC%AC%E4%B8%89%E6%AC%A1%E4%BD%9C%E4%B8%9A%E8%A7%A3%E6%9E%90/" rel="prev" title="图论——第三次作业解析">
+      <i class="fa fa-chevron-left"></i> 图论——第三次作业解析
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A0%94%E7%A9%B6%E8%83%8C%E6%99%AF"><span class="nav-number">1.</span> <span class="nav-text">研究背景</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%97%AE%E9%A2%98%E6%8F%90%E5%87%BA%EF%BC%9A%E5%A6%82%E4%BD%95%E5%BB%BA%E6%A8%A1%E5%92%8C%E9%A2%84%E6%B5%8B%E5%A4%9A%E7%89%A9%E7%90%86%E5%92%8C%E5%A4%9A%E5%B0%BA%E5%BA%A6%E7%B3%BB%E7%BB%9F%E7%9A%84%E5%8A%A8%E5%8A%9B%E5%AD%A6%EF%BC%9F"><span class="nav-number">1.1.</span> <span class="nav-text">问题提出：如何建模和预测多物理和多尺度系统的动力学？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%9B%AE%E5%89%8D%E6%89%80%E6%B1%82%E8%A7%A3%E7%9A%84%E9%97%AE%E9%A2%98%E7%B1%BB%E5%9E%8B%E4%BB%A5%E5%8F%8A%E4%BC%A0%E7%BB%9FML%E7%AE%97%E6%B3%95%E7%9A%84%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">1.2.</span> <span class="nav-text">目前所求解的问题类型以及传统ML算法的局限性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PINN%E4%BC%98%E7%82%B9"><span class="nav-number">1.3.</span> <span class="nav-text">PINN优点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E5%8E%9F%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">算法原理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PINN%E5%8E%9F%E7%90%86%E6%A6%82%E8%BF%B0"><span class="nav-number">2.1.</span> <span class="nav-text">PINN原理概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PINN%E7%BD%91%E7%BB%9C%E6%A1%86%E6%9E%B6"><span class="nav-number">2.2.</span> <span class="nav-text">PINN网络框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B1%82%E8%A7%A3%E4%B8%80%E9%98%B6%E9%9D%9E%E7%BA%BF%E6%80%A7Schro%CC%88dinger%E6%96%B9%E7%A8%8B"><span class="nav-number">2.3.</span> <span class="nav-text">求解一阶非线性Schrödinger方程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B1%82%E8%A7%A3%E5%AE%9E%E9%AA%8C"><span class="nav-number">3.</span> <span class="nav-text">求解实验</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%80%E7%BB%B4Burgers%E6%96%B9%E7%A8%8B"><span class="nav-number">3.1.</span> <span class="nav-text">一维Burgers方程</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%8F%8A%E5%B1%80%E9%99%90%E6%80%A7"><span class="nav-number">4.</span> <span class="nav-text">应用及局限性</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="wyy"
+      src="/uploads/avatar.jpg#/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">wyy</p>
+  <div class="site-description" itemprop="description">在积跬步了</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">27</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">wyy</span>
+</div>
+  
+  <div class="powered-by">
+    <div class="powered-by">
+    <i class="fa fa-user-md"></i>
+   <span id="busuanzi_container_site_pv">
+    本站总访问量<span id="busuanzi_value_site_pv"></span>次
+	</span>
+    </div>由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">全站共15.2k字</span>
+</div>
+
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+<script>
+document.querySelectorAll('.pdfobject-container').forEach(element => {
+  let url = element.dataset.target;
+  let pdfOpenParams = {
+    navpanes : 0,
+    toolbar  : 0,
+    statusbar: 0,
+    pagemode : 'thumbs',
+    view     : 'FitH'
+  };
+  let pdfOpenFragment = '#' + Object.entries(pdfOpenParams).map(([key, value]) => `${key}=${encodeURIComponent(value)}`).join('&');
+  let fullURL = `/lib/pdf/web/viewer.html?file=${encodeURIComponent(url)}${pdfOpenFragment}`;
+
+  if (NexT.utils.supportsPDFs()) {
+    element.innerHTML = `<embed class="pdfobject" src="${url + pdfOpenFragment}" type="application/pdf" style="height: ${element.dataset.height};">`;
+  } else {
+    element.innerHTML = `<iframe src="${fullURL}" style="height: ${element.dataset.height};" frameborder="0"></iframe>`;
+  }
+});
+</script>
+
+
+
+
+  
+
+  
+      
+
+<script>
+  if (typeof MathJax === 'undefined') {
+    window.MathJax = {
+      loader: {
+        source: {
+          '[tex]/amsCd': '[tex]/amscd',
+          '[tex]/AMScd': '[tex]/amscd'
+        }
+      },
+      tex: {
+        inlineMath: {'[+]': [['$', '$']]},
+        tags: 'ams'
+      },
+      options: {
+        renderActions: {
+          findScript: [10, doc => {
+            document.querySelectorAll('script[type^="math/tex"]').forEach(node => {
+              const display = !!node.type.match(/; *mode=display/);
+              const math = new doc.options.MathItem(node.textContent, doc.inputJax[0], display);
+              const text = document.createTextNode('');
+              node.parentNode.replaceChild(text, node);
+              math.start = {node: text, delim: '', n: 0};
+              math.end = {node: text, delim: '', n: 0};
+              doc.math.push(math);
+            });
+          }, '', false],
+          insertedScript: [200, () => {
+            document.querySelectorAll('mjx-container').forEach(node => {
+              let target = node.parentNode;
+              if (target.nodeName.toLowerCase() === 'li') {
+                target.parentNode.classList.add('has-jax');
+              }
+            });
+          }, '', false]
+        }
+      }
+    };
+    (function () {
+      var script = document.createElement('script');
+      script.src = '//cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+      script.defer = true;
+      document.head.appendChild(script);
+    })();
+  } else {
+    MathJax.startup.document.state(0);
+    MathJax.texReset();
+    MathJax.typeset();
+  }
+</script>
+
+    
+
+  
+
+</body>
+</html>
